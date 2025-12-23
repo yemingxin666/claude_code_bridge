@@ -207,7 +207,7 @@ class Iterm2Backend(TerminalBackend):
         try:
             result = subprocess.run(
                 [self._bin(), "session", "list", "--json"],
-                capture_output=True, text=True
+                capture_output=True, text=True, encoding='utf-8', errors='replace'
             )
             if result.returncode != 0:
                 return False
@@ -234,7 +234,7 @@ class Iterm2Backend(TerminalBackend):
         if parent_pane:
             args.extend(["--session", parent_pane])
 
-        result = subprocess.run(args, capture_output=True, text=True, check=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(args, capture_output=True, text=True, encoding='utf-8', errors='replace', check=True)
         # it2 output format: "Created new pane: <session_id>"
         output = result.stdout.strip()
         if ":" in output:
@@ -285,51 +285,44 @@ class WeztermBackend(TerminalBackend):
         cls._wezterm_bin = found or "wezterm"
         return cls._wezterm_bin
 
-    def _send_enter(self, pane_id: str) -> None:
-        """Send Enter key reliably using stdin (cross-platform)"""
+    def send_text(self, pane_id: str, text: str) -> None:
+        sanitized = text.replace("\r", "").replace("\n", "").strip()
+        if not sanitized:
+            return
+        subprocess.run(
+            [*self._cli_base_args(), "send-text", "--pane-id", pane_id, "--no-paste", sanitized],
+            check=True,
+        )
         enter_delay = _env_float("CCB_WEZTERM_ENTER_DELAY", 0.01)
         if enter_delay:
             time.sleep(enter_delay)
+        # Windows: \r \n \r\n as CLI args may be stripped by shell, use stdin directly
+        if is_windows():
+            subprocess.run(
+                [*self._cli_base_args(), "send-text", "--pane-id", pane_id, "--no-paste"],
+                input=b"\r",
+                check=False,
+            )
+            return
+        # Unix/macOS: try \r, \n, \r\n first
+        for char in ["\r", "\n", "\r\n"]:
+            try:
+                subprocess.run(
+                    [*self._cli_base_args(), "send-text", "--pane-id", pane_id, "--no-paste", char],
+                    check=True,
+                )
+                return
+            except subprocess.CalledProcessError:
+                continue
         subprocess.run(
             [*self._cli_base_args(), "send-text", "--pane-id", pane_id, "--no-paste"],
             input=b"\r",
             check=False,
         )
 
-    def send_text(self, pane_id: str, text: str) -> None:
-        sanitized = text.replace("\r", "").strip()
-        if not sanitized:
-            return
-
-        has_newlines = "\n" in sanitized
-        is_long = len(sanitized) > 200
-
-        # Fast path: short single-line text -> use --no-paste directly
-        if not has_newlines and not is_long:
-            subprocess.run(
-                [*self._cli_base_args(), "send-text", "--pane-id", pane_id, "--no-paste", sanitized],
-                check=True,
-            )
-            self._send_enter(pane_id)
-            return
-
-        # Slow path: multiline or long text -> use paste mode (bracketed paste)
-        subprocess.run(
-            [*self._cli_base_args(), "send-text", "--pane-id", pane_id],
-            input=sanitized.encode("utf-8"),
-            check=True,
-        )
-
-        # Wait for TUI to process bracketed paste content
-        paste_delay = _env_float("CCB_WEZTERM_PASTE_DELAY", 0.1)
-        if paste_delay:
-            time.sleep(paste_delay)
-
-        self._send_enter(pane_id)
-
     def is_alive(self, pane_id: str) -> bool:
         try:
-            result = subprocess.run([*self._cli_base_args(), "list", "--format", "json"], capture_output=True, text=True, encoding="utf-8", errors="replace")
+            result = subprocess.run([*self._cli_base_args(), "list", "--format", "json"], capture_output=True, text=True, encoding='utf-8', errors='replace')
             if result.returncode != 0:
                 return False
             panes = json.loads(result.stdout)
@@ -356,7 +349,7 @@ class WeztermBackend(TerminalBackend):
             elif "\\" in cwd or (len(cwd) > 2 and cwd[1] == ":"):
                 try:
                     wslpath_cmd = ["wslpath", "-a", cwd] if is_wsl() else ["wsl.exe", "wslpath", "-a", cwd]
-                    result = subprocess.run(wslpath_cmd, capture_output=True, text=True, check=True, encoding="utf-8", errors="replace")
+                    result = subprocess.run(wslpath_cmd, capture_output=True, text=True, encoding='utf-8', errors='replace', check=True)
                     wsl_cwd = result.stdout.strip()
                 except Exception:
                     pass
@@ -384,7 +377,7 @@ class WeztermBackend(TerminalBackend):
             shell, flag = _default_shell()
             args.extend(["--", shell, flag, cmd])
         try:
-            result = subprocess.run(args, capture_output=True, text=True, check=True, encoding="utf-8", errors="replace")
+            result = subprocess.run(args, capture_output=True, text=True, encoding='utf-8', errors='replace', check=True)
             return result.stdout.strip()
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"WezTerm split-pane failed:\nCommand: {' '.join(args)}\nStderr: {e.stderr}") from e
