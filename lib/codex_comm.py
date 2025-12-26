@@ -522,8 +522,9 @@ class CodexCommunicator:
 
     def _send_message(self, content: str) -> Tuple[str, Dict[str, Any]]:
         marker = self._generate_marker()
+        prefixed = f"[CCB] {content}"
         message = {
-            "content": content,
+            "content": prefixed,
             "timestamp": datetime.now().isoformat(),
             "marker": marker,
         }
@@ -532,7 +533,7 @@ class CodexCommunicator:
 
         # tmux mode drives bridge via FIFO; WezTerm/iTerm2 mode injects text directly to pane
         if self.terminal in ("wezterm", "iterm2"):
-            self._send_via_terminal(content)
+            self._send_via_terminal(prefixed)
         else:
             with open(self.input_fifo, "w", encoding="utf-8") as fifo:
                 fifo.write(json.dumps(message, ensure_ascii=False) + "\n")
