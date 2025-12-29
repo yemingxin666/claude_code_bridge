@@ -611,8 +611,12 @@ install_skills() {
     if [[ -d "$skill_dir" ]]; then
       local skill_name
       skill_name="$(basename "$skill_dir")"
-      mkdir -p "$skills_dst/$skill_name"
-      cp -f "$skill_dir"/*.md "$skills_dst/$skill_name/" 2>/dev/null || true
+      # Recursive copy entire skill directory
+      cp -rf "$skill_dir" "$skills_dst/"
+      # Warn if SKILL.md is missing
+      if [[ ! -f "$skills_dst/$skill_name/SKILL.md" ]]; then
+        echo "⚠️ Warning: $skill_name missing SKILL.md"
+      fi
     fi
   done
 

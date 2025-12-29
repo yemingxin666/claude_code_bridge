@@ -154,7 +154,7 @@ function Install-Native {
     New-Item -ItemType Directory -Path $binDir -Force | Out-Null
   }
 
-  $items = @("ccb", "lib", "bin", "commands", "skills")
+  $items = @("ccb", "lib", "bin", "commands")
   foreach ($item in $items) {
     $src = Join-Path $repoRoot $item
     $dst = Join-Path $InstallPrefix $item
@@ -247,16 +247,20 @@ function Install-ClaudeConfig {
     }
   }
 
-  # Install skills
+  # Install skills (recursive copy to ~/.claude/skills only)
   $srcSkills = Join-Path $repoRoot "skills"
   if (Test-Path $srcSkills) {
+    if (-not (Test-Path $skillsDir)) {
+      New-Item -ItemType Directory -Path $skillsDir -Force | Out-Null
+    }
     Get-ChildItem -Path $srcSkills -Directory | ForEach-Object {
       $skillDst = Join-Path $skillsDir $_.Name
-      if (-not (Test-Path $skillDst)) {
-        New-Item -ItemType Directory -Path $skillDst -Force | Out-Null
-      }
-      Get-ChildItem -Path $_.FullName -Filter "*.md" | ForEach-Object {
-        Copy-Item -Force $_.FullName (Join-Path $skillDst $_.Name)
+      # Recursive copy entire skill directory
+      Copy-Item -Recurse -Force $_.FullName $skillDst
+      # Warn if SKILL.md is missing
+      $skillMd = Join-Path $skillDst "SKILL.md"
+      if (-not (Test-Path $skillMd)) {
+        Write-Host "Warning: $($_.Name) missing SKILL.md"
       }
     }
     Write-Host "Installed workflow skills to $skillsDir"
