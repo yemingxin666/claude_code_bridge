@@ -1,3 +1,7 @@
+---
+description: 简化企业敏捷工作流，PRD → Architecture → Development → Review 四阶段，带 2 个审批门禁。
+---
+
 简化企业敏捷工作流，PRD → Architecture → Development → Review 四阶段，带 2 个审批门禁。
 
 ## 核心约束

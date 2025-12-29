@@ -1,3 +1,7 @@
+---
+description: /dev 7 步完整开发工作流，使用 cask/gask 并行调用替代 codeagent-wrapper，可配置覆盖率目标。
+---
+
 /dev 7 步完整开发工作流，使用 cask/gask 并行调用替代 codeagent-wrapper，可配置覆盖率目标。
 
 ## 核心约束
