@@ -1298,7 +1298,7 @@ def _get_remote_version_info() -> dict | None:
     import urllib.request
     import ssl
 
-    api_url = "https://api.github.com/repos/bfly123/claude_code_bridge/commits/main"
+    api_url = "https://api.github.com/repos/yemingxin666/claude_code_bridge/commits/main"
     try:
         ctx = ssl.create_default_context()
         req = urllib.request.Request(api_url, headers={"User-Agent": "ccb"})
@@ -1372,7 +1372,7 @@ def cmd_update(args):
     install_dir = Path(os.environ.get("CODEX_INSTALL_PREFIX") or default_install_dir).expanduser()
     if (script_root / "install.sh").exists():
         install_dir = script_root
-    repo_url = "https://github.com/bfly123/claude_code_bridge"
+    repo_url = "https://github.com/yemingxin666/claude_code_bridge"
 
     # Get current version info before update
     old_info = _get_version_info(install_dir)

@@ -16,7 +16,7 @@
 <img src="assets/demo.webp" alt="Dual-pane demo (animated)" width="900">
 
 <p>
-  <a href="https://github.com/bfly123/claude_code_bridge/releases/tag/2.0">Full demo video (GitHub Release)</a>
+  <a href="https://github.com/yemingxin666/claude_code_bridge/releases/tag/2.0">Full demo video (GitHub Release)</a>
 </p>
 
 </div>
@@ -85,7 +85,7 @@ Dual-pane approach (only sends/receives small messages):
 ## Install
 
 ```bash
-git clone https://github.com/bfly123/claude_code_bridge.git
+git clone https://github.com/yemingxin666/claude_code_bridge.git
 cd claude_code_bridge
 ./install.sh install
 ```
@@ -220,7 +220,7 @@ ccb update              # Update to latest version
 </div>
 
 <div align="center">
-  <a href="https://github.com/bfly123/claude_code_bridge/releases/tag/2.0">完整演示视频（GitHub Release）</a>
+  <a href="https://github.com/yemingxin666/claude_code_bridge/releases/tag/2.0">完整演示视频（GitHub Release）</a>
 </div>
 
 ---
@@ -272,7 +272,7 @@ MCP 方式：
 ## 安装
 
 ```bash
-git clone https://github.com/bfly123/claude_code_bridge.git
+git clone https://github.com/yemingxin666/claude_code_bridge.git
 cd claude_code_bridge
 ./install.sh install
 ```
