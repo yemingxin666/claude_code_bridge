@@ -4,6 +4,14 @@ description: 简化企业敏捷工作流，PRD → Architecture → Development 
 
 简化企业敏捷工作流，PRD → Architecture → Development → Review 四阶段，带 2 个审批门禁。
 
+## 用法
+`/bmad-pilot <项目描述> [选项]`
+
+### 选项
+- `--skip-tests`：跳过 QA 测试阶段
+- `--direct-dev`：跳过 Sprint 计划，架构后直接开发
+- `--skip-scan`：跳过仓库扫描（不推荐）
+
 ## 核心约束
 - 中文面向用户；与工具交互使用英文
 - 每次回复包含阶段标识：`[Phase X: 阶段名]`
@@ -22,6 +30,17 @@ description: 简化企业敏捷工作流，PRD → Architecture → Development 
 
 ## Pre-Phase: 上下文检索
 使用 `acemcp` 检索相关代码上下文后再进入 Phase 1（查询使用英文）。
+
+## Phase 0: 仓库扫描（除非 --skip-scan）
+**产物：仓库上下文报告**
+- 项目类型与技术栈
+- 代码组织模式
+- 现有约定与集成点
+
+**动作：** 快速扫描仓库结构：
+```
+cask-w "Scan repository structure. Identify: project type, tech stack, code patterns, testing frameworks, CI/CD pipelines. Output a brief context summary."
+```
 
 ## 四阶段流程（2 个门禁）
 
@@ -60,6 +79,22 @@ cask-w "Review the proposed architecture for boundary clarity, integration risks
 系统架构设计完成。是否开始实施阶段？(yes/no)
 ```
 
+### [Phase 2.5: Sprint Planning]（除非 --direct-dev）
+**产物：Sprint 计划**
+- 用户故事列表（含估算）
+- 任务分解与依赖
+- Sprint 目标与风险
+
+**动作：** 请求 Sprint 计划：
+```
+cask-w "Create sprint plan based on PRD and architecture. Break down into stories, estimate effort, identify dependencies and risks."
+```
+
+**确认：** 用户确认 Sprint 计划后进入开发。
+```
+Sprint 计划已生成。是否开始开发？(yes/no)
+```
+
 ### [Phase 3: Development] 开发实施
 **产物：执行计划 + 变更清单**
 - 3-7 步实施计划
@@ -68,7 +103,20 @@ cask-w "Review the proposed architecture for boundary clarity, integration risks
 
 **动作：** 按计划执行最小改动，Claude 为唯一实现者。
 
-### [Phase 4: Review] 评审与 QA
+### [Phase 3.5: Code Review] 代码评审
+**产物：评审报告**
+- 代码质量评分
+- 发现的问题/风险
+- 改进建议
+
+**动作：** 请求代码评审：
+```
+cask-w "Conduct code review. Check for correctness, security, performance, and maintainability. Provide a quality score (0-100)."
+```
+
+**质量门禁：** 评分 ≥ 90 继续，否则修复后重新评审（最多 2 轮）。
+
+### [Phase 4: Review] 评审与 QA（除非 --skip-tests）
 **产物：评审结论**
 - 发现的问题/风险
 - 测试建议与覆盖点
@@ -76,18 +124,41 @@ cask-w "Review the proposed architecture for boundary clarity, integration risks
 
 **动作：** 并行评审：
 ```
-cask-w "Conduct code review. Check for correctness, security, and maintainability issues."
+cask-w "Final review of implementation. Check correctness and edge cases."
 gask-w "Review from QA perspective. Identify test gaps and propose QA focus areas."
+```
+
+## 测试决策门禁（除非 --skip-tests）
+
+评审完成后，根据任务复杂度智能推荐：
+
+### 简单任务（建议跳过测试）
+- 配置文件变更
+- 文档更新
+- UI 文本/样式调整
+
+### 复杂任务（建议编写测试）
+- 业务逻辑实现
+- API 端点变更
+- 数据库结构修改
+- 认证/授权功能
+
+**交互提示：**
+```
+评审完成。根据任务复杂度分析：{智能推荐}
+是否创建测试用例？(yes/no)
 ```
 
 ## 产物存储
 产物默认存储在当前项目目录下：
 ```
 .claude/specs/{feature_name}/
-├── 01-prd.md           # PRD
-├── 02-architecture.md  # 架构
-├── 03-dev-plan.md      # 开发计划
-└── 04-review.md        # 评审报告
+├── 00-repo-scan.md         # 仓库扫描结果（如未跳过）
+├── 01-prd.md               # PRD
+├── 02-architecture.md      # 架构
+├── 03-sprint-plan.md       # Sprint 计划（如未跳过）
+├── 04-dev-plan.md          # 开发计划
+└── 05-review.md            # 评审报告
 ```
 
 ## 输出格式
@@ -97,5 +168,6 @@ gask-w "Review from QA perspective. Identify test gaps and propose QA focus area
 - **不确定信息：** 必须向用户询问，禁止假设
 - **门禁未通过：** 返回上一阶段继续迭代
 - **任务失败：** 重试一次，仍失败则报告用户
+- **评审分数不足：** 修复问题后重新评审（最多 2 轮）
 
 用户需求：$ARGUMENTS

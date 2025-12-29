@@ -4,6 +4,13 @@ description: 需求驱动工作流，带可配置质量门禁，适配 ccb 6 阶
 
 需求驱动工作流，带可配置质量门禁，适配 ccb 6 阶段流程，使用 cask/gask 进行分析和评审。
 
+## 用法
+`/requirements-pilot <功能描述> [选项]`
+
+### 选项
+- `--skip-tests`：跳过测试阶段
+- `--skip-scan`：跳过仓库扫描（不推荐）
+
 ## 核心约束
 - 中文面向用户；与工具交互使用英文
 - 每次回复包含阶段标识：`[Phase X: 阶段名]`
@@ -23,6 +30,17 @@ description: 需求驱动工作流，带可配置质量门禁，适配 ccb 6 阶
 
 ## Pre-Phase: 上下文检索
 使用 `acemcp` 检索相关代码上下文后再进入 Phase 1（查询使用英文）。
+
+## Phase 0: 仓库扫描（除非 --skip-scan）
+**产物：仓库上下文报告**
+- 项目类型与技术栈
+- 代码组织模式
+- 现有约定与集成点
+
+**动作：** 快速扫描仓库结构：
+```
+cask-w "Scan repository structure. Identify: project type, tech stack, code patterns, testing frameworks, and integration points. Output a brief context summary."
+```
 
 ## 流程模板
 
@@ -56,7 +74,10 @@ cask-w "Cross-validate the proposed approach. Identify risks and edge cases."
 - 3-7 步
 - 关键边界与回滚
 
-**门禁：** 用户确认后进入执行。
+**🛑 门禁：** 用户确认后进入执行。
+```
+实施计划已生成。是否确认执行？(yes/no)
+```
 
 ### [Phase 4: Execution] 实施
 **产物：变更清单**
@@ -73,9 +94,43 @@ cask-w "Cross-validate the proposed approach. Identify risks and edge cases."
 - 风险/缺陷
 - 测试建议
 
-**动作：** 测试决策（智能推荐）：
-- 简单任务（配置/文档）：建议跳过测试
-- 复杂任务（业务逻辑/API）：建议编写测试
+**动作：** 并行评审：
+```
+cask-w "Review implementation for correctness, security, and maintainability."
+gask-w "Review from QA perspective. Identify test gaps and risk areas."
+```
+
+## 测试决策门禁（除非 --skip-tests）
+
+评审完成后，根据任务复杂度智能推荐：
+
+### 简单任务（建议跳过测试）
+- 配置文件变更
+- 文档更新
+- 简单工具函数
+- UI 文本/样式调整
+
+### 复杂任务（建议编写测试）
+- 业务逻辑实现
+- API 端点变更
+- 数据库结构修改
+- 认证/授权功能
+- 外部服务集成
+
+**交互提示：**
+```
+评审完成。根据任务复杂度分析：{智能推荐}
+是否创建测试用例？(yes/no)
+```
+
+## 产物存储
+产物默认存储在当前项目目录下：
+```
+.claude/specs/{feature_name}/
+├── 00-repo-context.md      # 仓库扫描结果（如未跳过）
+├── requirements-confirm.md  # 需求确认过程
+└── requirements-spec.md     # 技术规格
+```
 
 ## 输出格式
 每次回复以阶段标识开头，包含质量评分（如适用）。
