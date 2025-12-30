@@ -1,23 +1,54 @@
+---
+description: Forward commands to Gemini session and wait for reply via gask-w command (supports tmux / WezTerm).
+---
+
 Forward commands to Gemini session and wait for reply via `gask-w` command (supports tmux / WezTerm).
 
-Execution:
-1. Run `Bash(gask-w "<content>", run_in_background=true)` to start background task
-2. Tell user the task_id and that Gemini is processing
-3. Wait for bash-notification (task completed)
-4. When notification arrives, immediately `cat` the output file to show result
+## Execution
 
-Parameters:
+**⚠️ IMPORTANT: Use heredoc format to avoid quote escaping issues:**
+
+```bash
+gask-w "$(cat <<'EOF'
+<content>
+EOF
+)"
+```
+
+Or with `run_in_background=true`:
+```
+Bash(gask-w "$(cat <<'EOF'
+<content>
+EOF
+)", run_in_background=true)
+```
+
+## Parameters
 - `<content>` required, will be forwarded to Gemini session
 
-Workflow:
+## Workflow
 1. Start gask-w in background -> get task_id
 2. Inform user: "Gemini processing (task: xxx)"
-3. When bash-notification arrives -> `cat <output-file>` to show result
+3. When bash-notification arrives -> show result
 
-Examples:
-- `Bash(gask-w "explain this", run_in_background=true)`
-- bash-notification arrives -> `cat /tmp/.../tasks/xxx.output`
+## Examples
 
-Hints:
+**Simple message (no special chars):**
+```bash
+gask-w "explain this"
+```
+
+**Complex message (with quotes, special chars) - USE HEREDOC:**
+```bash
+gask-w "$(cat <<'EOF'
+Review the "login" UI component.
+Check if it's styled correctly.
+Look for $variables and backticks.
+EOF
+)"
+```
+
+## Hints
+- **Always use heredoc format** when message may contain quotes or special characters
 - Use `gask` for fire-and-forget (no wait)
 - Use `/gpend` to view latest reply anytime

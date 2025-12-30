@@ -1,23 +1,54 @@
+---
+description: Forward commands to Codex session and wait for reply via cask-w command (supports tmux / WezTerm).
+---
+
 Forward commands to Codex session and wait for reply via `cask-w` command (supports tmux / WezTerm).
 
-Execution:
-1. Run `Bash(cask-w "<content>", run_in_background=true)` to start background task
-2. Tell user the task_id and that Codex is processing
-3. Wait for bash-notification (task completed)
-4. When notification arrives, immediately `cat` the output file to show result
+## Execution
 
-Parameters:
+**⚠️ IMPORTANT: Use heredoc format to avoid quote escaping issues:**
+
+```bash
+cask-w "$(cat <<'EOF'
+<content>
+EOF
+)"
+```
+
+Or with `run_in_background=true`:
+```
+Bash(cask-w "$(cat <<'EOF'
+<content>
+EOF
+)", run_in_background=true)
+```
+
+## Parameters
 - `<content>` required, will be forwarded to Codex session
 
-Workflow:
+## Workflow
 1. Start cask-w in background -> get task_id
 2. Inform user: "Codex processing (task: xxx)"
-3. When bash-notification arrives -> `cat <output-file>` to show result
+3. When bash-notification arrives -> show result
 
-Examples:
-- `Bash(cask-w "analyze code", run_in_background=true)`
-- bash-notification arrives -> `cat /tmp/.../tasks/xxx.output`
+## Examples
 
-Hints:
+**Simple message (no special chars):**
+```bash
+cask-w "analyze code"
+```
+
+**Complex message (with quotes, special chars) - USE HEREDOC:**
+```bash
+cask-w "$(cat <<'EOF'
+Analyze the "login" feature.
+Check if it's working correctly.
+Look for $variables and backticks.
+EOF
+)"
+```
+
+## Hints
+- **Always use heredoc format** when message may contain quotes or special characters
 - Use `cask` for fire-and-forget (no wait)
 - Use `/cpend` to view latest reply anytime

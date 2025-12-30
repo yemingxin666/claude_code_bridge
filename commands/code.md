@@ -8,6 +8,13 @@ description: 轻量 /code 工作流，映射到 ccb 6 阶段流程，使用 cask
 - 中文面向用户；与工具交互使用英文
 - 每次回复包含阶段标识：`[Phase X: 阶段名]`
 - 仅用 `cask/gask` 与 `cask-w/gask-w`，禁用 codeagent-wrapper
+- **调用 cask-w/gask-w 时使用 heredoc 格式避免引号问题：**
+  ```bash
+  cask-w "$(cat <<'EOF'
+  消息内容，可包含 "引号" 和 '单引号'
+  EOF
+  )"
+  ```
 
 ## 专家角色映射
 
