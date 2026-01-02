@@ -3,6 +3,11 @@
 <global_protocols>
 ## 0. Global Protocols
 
+<rule name="Windows路径处理" priority="critical">
+**强制使用绝对路径**：所有文件操作必须使用完整的 Windows 绝对路径（含驱动器盘符）。
+**路径分隔符回退**：若文件读取失败（可能因 `\f` 被解析为 formfeed ASCII 12），将反斜杠 `\` 替换为正斜杠 `/` 后重试。
+</rule>
+
 <rule name="交互语言">
 工具与模型交互强制使用 **English**；用户输出强制使用 **中文**。
 </rule>
@@ -234,3 +239,29 @@ Gemini 是另一个通过 tmux 或 WezTerm 运行的 AI 助手。当用户意图
 | **Phase 6: Review** | **Audit & QA** | **Codex** AND **Gemini**<br>(Dual-Model) | **Unified Diff** + **Target File**<br>(English) | **Review Comments**<br>(Bugs, Edge Cases, Tests) | • **Mandatory:** Triggered immediately after code changes.<br>• **Action:** Synthesize feedback into final fix. |
 
 </resource_matrix>
+
+<!-- CLAUDE-MEM QUICK REFERENCE -->
+## 🧠 Memory System Quick Reference
+
+### Search Your Memories (SIMPLE & POWERFUL)
+- **Semantic search is king**: `mcp__claude-mem__chroma_query_documents(["search terms"])`
+- **🔒 ALWAYS include project name in query**: `["claude-mem feature authentication"]` not just `["feature authentication"]`
+- **Include dates for temporal search**: `["project-name 2025-09-09 bug fix"]` finds memories from that date
+- **Get specific memory**: `mcp__claude-mem__chroma_get_documents(ids: ["document_id"])`
+
+### Search Tips That Actually Work
+- **Project isolation**: Always prefix queries with project name to avoid cross-contamination
+- **Temporal search**: Include dates (YYYY-MM-DD) in query text to find memories from specific times
+- **Intent-based**: "implementing oauth" > "oauth implementation code function"
+- **Multiple queries**: Search with different phrasings for better coverage
+- **Session-specific**: Include session ID in query when you know it
+
+### What Doesn't Work (Don't Do This!)
+- ❌ Complex where filters with $and/$or - they cause errors
+- ❌ Timestamp comparisons ($gte/$lt) - Chroma stores timestamps as strings
+- ❌ Mixing project filters in where clause - causes "Error finding id"
+
+### Storage
+- Collection: "claude_memories"
+- Archives: ~/.claude-mem/archives/
+<!-- /CLAUDE-MEM QUICK REFERENCE -->
