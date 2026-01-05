@@ -90,7 +90,11 @@ def main(argv: list[str]) -> int:
 
         if message_reply:
             print(f"🤖 {t('reply_from', provider='Gemini')}")
-            print(message_reply)
+            # Escape leading '[' to prevent PowerShell misinterpretation
+            safe_reply = message_reply
+            if safe_reply.startswith('['):
+                safe_reply = '`' + safe_reply
+            print(safe_reply)
             reply_file.write_text(message_reply, encoding="utf-8")
         else:
             print(f"⏰ Timeout after {int(sync_timeout)}s")

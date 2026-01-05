@@ -429,7 +429,7 @@ class CodexCommunicator:
 
     def _send_message(self, content: str) -> Tuple[str, Dict[str, Any]]:
         marker = self._generate_marker()
-        prefixed = f"[CCB] {content}"
+        prefixed = f"CCB: {content}"
         message = {
             "content": prefixed,
             "timestamp": datetime.now().isoformat(),

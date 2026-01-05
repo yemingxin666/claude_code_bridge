@@ -558,7 +558,7 @@ class GeminiCommunicator:
     def _send_via_terminal(self, content: str) -> bool:
         if not self.backend or not self.pane_id:
             raise RuntimeError("Terminal session not configured")
-        prefixed = f"[CCB] {content}"
+        prefixed = f"CCB: {content}"
         self.backend.send_text(self.pane_id, prefixed)
         return True
 
